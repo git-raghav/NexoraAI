@@ -46,7 +46,7 @@ git clone <repository-url>
 cd <repository-name>
 ```
 
-3. Build and start the containers:
+3. Build and start the container:
 
 ```bash
 docker-compose up --build
@@ -60,32 +60,15 @@ To stop the application:
 docker-compose down
 ```
 
-To remove all data (including the database volume):
-
-```bash
-docker-compose down -v
-```
-
 ## Manual Setup (Alternative)
 
-1. Create a PostgreSQL database and update the environment variables:
-
-```bash
-# Create a .env file with the following content
-DB_HOST=localhost
-DB_NAME=ml_project
-DB_USER=your_username
-DB_PASSWORD=your_password
-DB_PORT=5432
-```
-
-2. Install the required packages:
+1. Install the required packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the Streamlit app:
+2. Run the Streamlit app:
 
 ```bash
 streamlit run app.py
@@ -105,6 +88,7 @@ streamlit run app.py
 │   └── 4_Data_Drift_Analysis.py
 ├── datasets/             # Directory for stored datasets
 ├── models/              # Directory for saved models
+├── ml_project.db       # SQLite database file
 ├── Dockerfile           # Dockerfile for building the application
 ├── docker-compose.yml   # Docker Compose configuration
 └── requirements.txt     # Project dependencies
@@ -125,14 +109,14 @@ streamlit run app.py
 -   scikit-learn
 -   shap
 -   evidently
--   psycopg2-binary
 -   python-dotenv
 -   plotly
 -   joblib
+-   matplotlib
 
 ## Notes
 
--   The project uses PostgreSQL to store dataset and model metadata
+-   The project uses SQLite to store dataset and model metadata
 -   Models and datasets are stored on the filesystem
 -   SHAP values are used for model interpretability
 -   Evidently AI is used for data drift analysis
