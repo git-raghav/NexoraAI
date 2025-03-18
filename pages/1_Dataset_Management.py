@@ -3,6 +3,11 @@ import pandas as pd
 from database import get_database_connection
 import os
 from ml_utils import load_default_dataset
+import io
+
+# Initialize session state for datasets if it doesn't exist
+if 'datasets' not in st.session_state:
+    st.session_state.datasets = {}
 
 st.title("Dataset Management")
 
@@ -20,27 +25,15 @@ with tab1:
         X, y = load_default_dataset(default_dataset)
         df = pd.concat([X, y.rename('target')], axis=1)
 
-        # Save to database
-        conn = get_database_connection()
-        if conn:
-            cur = conn.cursor()
+        # Save to session state
+        st.session_state.datasets[default_dataset] = {
+            'data': df,
+            'description': f"Default {default_dataset} dataset",
+            'created_at': pd.Timestamp.now()
+        }
 
-            # Save dataset to file
-            os.makedirs("datasets", exist_ok=True)
-            file_path = f"datasets/{default_dataset}.csv"
-            df.to_csv(file_path, index=False)
-
-            # Save to database
-            cur.execute(
-                "INSERT INTO datasets (name, description, file_path) VALUES (%s, %s, %s)",
-                (default_dataset, f"Default {default_dataset} dataset", file_path)
-            )
-            conn.commit()
-            cur.close()
-            conn.close()
-
-            st.success(f"Successfully loaded {default_dataset} dataset!")
-            st.dataframe(df)
+        st.success(f"Successfully loaded {default_dataset} dataset!")
+        st.dataframe(df)
 
 with tab2:
     st.header("Upload Your Dataset")
@@ -51,45 +44,36 @@ with tab2:
     if uploaded_file and dataset_name and st.button("Upload Dataset"):
         df = pd.read_csv(uploaded_file)
 
-        # Save to database
-        conn = get_database_connection()
-        if conn:
-            cur = conn.cursor()
+        # Save to session state
+        st.session_state.datasets[dataset_name] = {
+            'data': df,
+            'description': dataset_description,
+            'created_at': pd.Timestamp.now()
+        }
 
-            # Save dataset to file
-            os.makedirs("datasets", exist_ok=True)
-            file_path = f"datasets/{dataset_name}.csv"
-            df.to_csv(file_path, index=False)
-
-            # Save to database
-            cur.execute(
-                "INSERT INTO datasets (name, description, file_path) VALUES (%s, %s, %s)",
-                (dataset_name, dataset_description, file_path)
-            )
-            conn.commit()
-            cur.close()
-            conn.close()
-
-            st.success("Dataset uploaded successfully!")
-            st.dataframe(df)
+        st.success("Dataset uploaded successfully!")
+        st.dataframe(df)
 
 with tab3:
     st.header("View Datasets")
-    conn = get_database_connection()
-    if conn:
-        cur = conn.cursor()
-        cur.execute("SELECT id, name, description, created_at FROM datasets")
-        datasets = cur.fetchall()
-        cur.close()
-        conn.close()
 
-        if datasets:
-            for dataset in datasets:
-                with st.expander(f"Dataset: {dataset[1]}"):
-                    st.write(f"ID: {dataset[0]}")
-                    st.write(f"Description: {dataset[2]}")
-                    st.write(f"Created at: {dataset[3]}")
+    if not st.session_state.datasets:
+        st.warning("No datasets available. Please add datasets in the Dataset Management page.")
+    else:
+        for dataset_name, dataset_info in st.session_state.datasets.items():
+            with st.expander(f"Dataset: {dataset_name}"):
+                st.write(f"Description: {dataset_info['description']}")
+                st.write(f"Created at: {dataset_info['created_at']}")
+                st.write(f"Shape: {dataset_info['data'].shape}")
 
-                    # Load and display dataset preview
-                    df = pd.read_csv(f"datasets/{dataset[1]}.csv")
-                    st.dataframe(df.head())
+                # Display dataset preview
+                st.dataframe(dataset_info['data'].head())
+
+                # Add download button
+                csv = dataset_info['data'].to_csv(index=False)
+                st.download_button(
+                    label=f"Download {dataset_name}",
+                    data=csv,
+                    file_name=f"{dataset_name}.csv",
+                    mime="text/csv"
+                )

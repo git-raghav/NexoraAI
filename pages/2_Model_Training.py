@@ -1,31 +1,22 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from database import get_database_connection
-from ml_utils import MLModel, process_uploaded_dataset
-import os
+from ml_utils import MLModel
 import json
 
 st.title("Model Training")
 
-# Get available datasets
-conn = get_database_connection()
-datasets = []
-if conn:
-    cur = conn.cursor()
-    cur.execute("SELECT id, name FROM datasets")
-    datasets = cur.fetchall()
-    cur.close()
-    conn.close()
+# Get available datasets from session state
+if 'datasets' not in st.session_state:
+    st.session_state.datasets = {}
 
-if not datasets:
+if not st.session_state.datasets:
     st.warning("No datasets available. Please add datasets in the Dataset Management page.")
 else:
     # Dataset selection
-    dataset_id, dataset_name = st.selectbox(
+    dataset_name = st.selectbox(
         "Select Dataset",
-        datasets,
-        format_func=lambda x: x[1]
+        list(st.session_state.datasets.keys())
     )
 
     # Model configuration
@@ -38,30 +29,29 @@ else:
     test_size = st.slider("Test Set Size", 0.1, 0.5, 0.2)
 
     if st.button("Train Model"):
-        # Load dataset
-        df = pd.read_csv(f"datasets/{dataset_name}.csv")
-        X, y = process_uploaded_dataset(f"datasets/{dataset_name}.csv")
+        # Get dataset from session state
+        dataset_info = st.session_state.datasets[dataset_name]
+        df = dataset_info['data']
+
+        # Split features and target
+        X = df.iloc[:, :-1]
+        y = df.iloc[:, -1]
 
         # Create and train model
         model = MLModel(model_type=model_type)
         results = model.train(X, y, test_size=test_size)
 
-        # Save model
-        os.makedirs("models", exist_ok=True)
-        model_path = f"models/{dataset_name}_{model_type}.joblib"
-        model.save_model(model_path)
+        # Save model to session state
+        if 'models' not in st.session_state:
+            st.session_state.models = {}
 
-        # Save to database
-        conn = get_database_connection()
-        if conn:
-            cur = conn.cursor()
-            cur.execute(
-                "INSERT INTO models (name, dataset_id, model_type, model_path, metrics) VALUES (%s, %s, %s, %s, %s)",
-                (f"{dataset_name}_{model_type}", dataset_id, model_type, model_path, json.dumps(results['metrics']))
-            )
-            conn.commit()
-            cur.close()
-            conn.close()
+        model_name = f"{dataset_name}_{model_type}"
+        st.session_state.models[model_name] = {
+            'model': model,
+            'results': results,
+            'dataset_name': dataset_name,
+            'model_type': model_type
+        }
 
         # Display results
         st.success("Model trained successfully!")

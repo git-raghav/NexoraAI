@@ -1,38 +1,26 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from database import get_database_connection
 from ml_utils import MLModel
-import json
 
 st.title("Model Prediction")
 
-# Get available models
-conn = get_database_connection()
-models = []
-if conn:
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT m.id, m.name, m.model_path, d.name as dataset_name
-        FROM models m
-        JOIN datasets d ON m.dataset_id = d.id
-    """)
-    models = cur.fetchall()
-    cur.close()
-    conn.close()
+# Get available models from session state
+if 'models' not in st.session_state:
+    st.session_state.models = {}
 
-if not models:
+if not st.session_state.models:
     st.warning("No trained models available. Please train models in the Model Training page.")
 else:
     # Model selection
-    selected_model = st.selectbox(
+    model_name = st.selectbox(
         "Select Model",
-        models,
-        format_func=lambda x: f"{x[1]} (Dataset: {x[3]})"
+        list(st.session_state.models.keys())
     )
 
-    # Load the model
-    model = MLModel.load_model(selected_model[2])
+    # Get model from session state
+    model_info = st.session_state.models[model_name]
+    model = model_info['model']
 
     # Input method selection
     input_method = st.radio(
@@ -42,13 +30,18 @@ else:
 
     if input_method == "Manual Input":
         # Get the dataset structure
-        df = pd.read_csv(f"datasets/{selected_model[3]}.csv")
+        dataset_info = st.session_state.datasets[model_info['dataset_name']]
+        df = dataset_info['data']
         feature_names = df.columns[:-1]  # Exclude target column
 
         # Create input fields for each feature
         input_data = {}
         for feature in feature_names:
-            input_data[feature] = st.number_input(f"Enter value for {feature}", value=0.0)
+            if df[feature].dtype in ['int64', 'float64']:
+                input_data[feature] = st.number_input(f"Enter value for {feature}", value=0.0)
+            else:
+                unique_values = df[feature].unique()
+                input_data[feature] = st.selectbox(f"Select value for {feature}", unique_values)
 
         if st.button("Make Prediction"):
             # Convert input to DataFrame
