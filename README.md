@@ -135,6 +135,8 @@ streamlit run Home.py
 -   Datasets are stored in the `datasets` directory
 -   The SQLite database file (`ml_project.db`) is created automatically on first run
 -   All data is persisted between sessions using Streamlit's session state and SQLite
+-   SHAP values are used for model interpretability
+-   Evidently AI is used for data drift analysis
 
 ## Contributing
 
@@ -147,3 +149,5 @@ streamlit run Home.py
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+Happy Coding!!
