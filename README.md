@@ -1,105 +1,122 @@
-# ML Project Dashboard
+# ML Project Management System
 
-A comprehensive machine learning project dashboard built with Streamlit that allows users to:
-
--   Train ML models on default datasets (e.g., Iris)
--   Upload and analyze custom datasets
--   Train multiple types of models (Random Forest, Logistic Regression, SVM)
--   Visualize model performance with SHAP values
--   Make predictions using trained models
--   Analyze data drift using Evidently AI
+A Streamlit-based application for managing machine learning projects, including dataset management, model training, prediction, and data drift analysis.
 
 ## Features
 
-1. **Dataset Management**
-
-    - Load default datasets (Iris)
-    - Upload custom datasets
-    - View and manage datasets
-
-2. **Model Training**
-
-    - Train multiple model types
-    - Visualize model performance
-    - SHAP value analysis
-    - Store models in database
-
-3. **Model Prediction**
-
-    - Make predictions using trained models
-    - Support for both single predictions and batch predictions
-    - Download prediction results
-
-4. **Data Drift Analysis**
-    - Compare datasets for drift
-    - Analyze feature-level drift
-    - Statistical property comparison
-
-## Setup with Docker (Recommended)
-
-1. Make sure you have Docker and Docker Compose installed on your system.
-
-2. Clone this repository:
-
-```bash
-git clone <repository-url>
-cd <repository-name>
-```
-
-3. Build and start the container:
-
-```bash
-docker-compose up --build
-```
-
-The application will be available at `http://localhost:8501`
-
-To stop the application:
-
-```bash
-docker-compose down
-```
-
-## Manual Setup (Alternative)
-
-1. Install the required packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-2. Run the Streamlit app:
-
-```bash
-streamlit run app.py
-```
+-   Dataset Management
+    -   Upload and manage datasets
+    -   View dataset statistics and visualizations
+    -   Support for CSV files
+-   Model Training
+    -   Train multiple ML models
+    -   Model performance comparison
+    -   Feature importance analysis
+-   Model Prediction
+    -   Make predictions on new data
+    -   Support for both manual input and CSV upload
+    -   SHAP value visualization
+-   Data Drift Analysis
+    -   Compare datasets for drift
+    -   Statistical analysis
+    -   Feature-level drift detection
 
 ## Project Structure
 
 ```
 .
-├── app.py                  # Main Streamlit application
-├── database.py            # Database configuration and utilities
-├── ml_utils.py           # ML model utilities and helper functions
-├── pages/                # Streamlit pages
-│   ├── 1_Dataset_Management.py
-│   ├── 2_Model_Training.py
-│   ├── 3_Model_Prediction.py
-│   └── 4_Data_Drift_Analysis.py
-├── datasets/             # Directory for stored datasets
-├── models/              # Directory for saved models
-├── ml_project.db       # SQLite database file
-├── Dockerfile           # Dockerfile for building the application
-├── docker-compose.yml   # Docker Compose configuration
-└── requirements.txt     # Project dependencies
+├── README.md
+├── requirements.txt
+├── ml_utils.py
+├── database.py
+├── ml_project.db
+├── datasets/
+│   └── .gitkeep
+└── pages/
+    ├── 1_Dataset_Management.py
+    ├── 2_Model_Training.py
+    ├── 3_Model_Prediction.py
+    └── 4_Data_Drift_Analysis.py
 ```
+
+## Setup
+
+1. Clone the repository:
+
+```bash
+git clone <your-repo-url>
+cd <repo-name>
+```
+
+2. Create and activate a virtual environment (optional but recommended):
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running Locally
+
+1. Start the Streamlit app:
+
+```bash
+streamlit run Home.py
+```
+
+2. Open your browser and navigate to the URL shown in the terminal (typically http://localhost:8501)
+
+## Deployment on Streamlit Cloud
+
+1. Push your code to a GitHub repository
+
+2. Go to [Streamlit Cloud](https://share.streamlit.io/)
+
+3. Click "New app" and select your repository
+
+4. Set the following configuration:
+
+    - Main file path: `Home.py`
+    - Python version: 3.8 or higher
+    - Add the following secrets in Streamlit Cloud:
+        ```
+        [general]
+        enableTelemetry = false
+        ```
+
+5. Click "Deploy!"
 
 ## Usage
 
-1. Start by adding datasets in the Dataset Management page
-2. Train models on your datasets in the Model Training page
-3. Make predictions using your trained models in the Model Prediction page
-4. Analyze data drift between datasets in the Data Drift Analysis page
+1. **Dataset Management**
+
+    - Upload your datasets using the Dataset Management page
+    - View dataset statistics and visualizations
+    - Datasets are stored in the `datasets` directory
+
+2. **Model Training**
+
+    - Select a dataset and model type
+    - Configure model parameters
+    - Train and evaluate models
+    - View model performance metrics and feature importance
+
+3. **Model Prediction**
+
+    - Select a trained model
+    - Input new data manually or upload a CSV file
+    - Get predictions and probability scores
+    - View SHAP values for feature importance
+
+4. **Data Drift Analysis**
+    - Select reference and current datasets
+    - Analyze data drift between datasets
+    - View statistical properties and drift metrics
 
 ## Dependencies
 
@@ -109,15 +126,24 @@ streamlit run app.py
 -   scikit-learn
 -   shap
 -   evidently
--   python-dotenv
 -   plotly
--   joblib
--   matplotlib
+-   seaborn
 
 ## Notes
 
--   The project uses SQLite to store dataset and model metadata
--   Models and datasets are stored on the filesystem
--   SHAP values are used for model interpretability
--   Evidently AI is used for data drift analysis
--   Docker volumes are used to persist data and models between container restarts
+-   The application uses SQLite for storing dataset and model metadata
+-   Datasets are stored in the `datasets` directory
+-   The SQLite database file (`ml_project.db`) is created automatically on first run
+-   All data is persisted between sessions using Streamlit's session state and SQLite
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

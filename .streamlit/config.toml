@@ -6,8 +6,15 @@ textColor = "#262730"
 font = "sans serif"
 
 [server]
-maxUploadSize = 200
+enableCORS = false
 enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false
+
+[runner]
+fastRerenderThreshold = 1000
+
+[client]
+showErrorDetails = true
+toolbarMode = "minimal"
